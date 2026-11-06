@@ -1,0 +1,244 @@
+<div id="top"></div>
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/naufalist/getcontact-web">
+    <img src="public/images/getcontact.webp" alt="Logo" height="125">
+  </a>
+
+  <h3 align="center">GetContact PHP (Web)</h3>
+
+  <p align="center">
+    A simple web app to view GetContact profile or tag(s) directly via the API without needing to access the mobile app, written in PHP.
+    <br />
+    <!-- <a href="https://github.com/naufalist/getcontact-web"><strong>Explore the docs »</strong></a>
+    <br />
+    <br /> -->
+    <a href="https://tools.naufalist.com/getcontact">View Demo</a>
+    ·
+    <a href="https://github.com/naufalist/getcontact-web/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/naufalist/getcontact-web/issues">Request Feature</a>
+  </p>
+</div>
+
+## Note
+
+- __2026-08-08__
+
+  The latest versions of Getcontact store their credentials in datastore files. To simplify the extraction process, I created LSPosed module that automatically extracts the credentials whenever Getcontact is opened from a fresh start (not resumed from the background). Check out this section for more information: <a href="#getcontact-key-extractor">Getcontact Key Extractor</a>
+
+- __2026-06-20__
+
+  It appears that newer versions of GetContact use a different approach for storing both the final key and authentication token. Since I have not yet conducted any analysis or experimentation on the latest releases, I cannot confirm the exact storage mechanism used in those versions. For the time being, you may try downgrading GetContact to a 7.x.x release (for example, version 7.2.0). Based on the last information I remember, version 7 still used the older implementation where the final key and token values were stored in the GetContactSettingsPref.xml file. Older APK versions can usually be obtained from various APK archive websites available online.
+  
+- __2025-03-31__
+
+  This script may not work perfectly yet, and currently it can only retrieve subscription data, view profiles, and search tags. Reverse engineering is necessary to further enhance the features of the script I have made.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ABOUT THE PROJECT -->
+
+## About
+
+<p align="center">
+  <img src="public/images/screenshot.png" alt="Screenshot Form"/>
+  <img src="public/images/screenshot2.png" alt="Screenshot Profile"/>
+  <img src="public/images/screenshot3.png" alt="Screenshot Download Tags"/>
+</p>
+
+My friends often ask me to check the tags or profile of a phone number using GetContact because they don’t have the app. I used to do it manually — I would check the number, take a screenshot of the result, and send it to them. With this script, things are much easier. Now they can check it themselves by submitting the number through a form, and they can even download the result as an image. (***getcontact credentials (final key & token) must be stored in the config file (src/configurations/getcontact.php).***).
+
+### Features
+
+* **Search**
+  * You can search for both profiles and tags.
+* **Manage Credentials***
+  * Add, update, or delete credentials. Each credential includes: `client device id`, `final key`, `token`, and `description` field for notes or info about the credential.
+* **Verify Captcha***
+  * If a credential gets a 403 Forbidden error, you can validate the captcha through the web interface.
+* **Auto Generate Credential***
+  * You can generate the final key and token directly from the website without needing to log in manually through the mobile app.
+
+> :information_source: Features marked with an asterisk are available in the dashboard at `/dashboard`.
+> Default login (user/pass): `admin` / `admin`.
+
+### Built With
+
+* [PHP](https://www.php.net/releases/8.2/en.php) `v8.2`
+* [Bootswatch (cosmo)](https://bootswatch.com/cosmo/) `v5.3.2`
+* [FontAwesome](https://fontawesome.com/v5/) `v5.15.4`
+* [SweetAlert2](https://sweetalert2.github.io/) `v2`
+* [JQuery](https://jquery.com/download/) `v3.5.1`
+* [Html2Canvas](https://html2canvas.hertzen.com/) `v1.4.1`
+* [Notyf](https://carlosroso.com/notyf/) `v3`
+
+### Prerequisites
+
+To run this app, you need PHP and/or web server in your environment. You can use [XAMPP](https://www.apachefriends.org/download.html) or [Laragon]([Laragon](https://laragon.org/download/)) for Windows, or [MAMP](https://www.mamp.info/en/downloads/) for macOS.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## How to get GetContact Final Key & Token (Manual)
+
+To obtain the final key and token from the GetContact app, I used an Android smartphone with ROOT access enabled. You can use either a real device or an emulator (such as MEmu, LDPlayer, etc.).
+
+> Make sure you’re already logged in to GetContact on your smartphone.
+
+1. Open file manager, find `GetContactSettingsPref.xml` in this directory:
+
+   ```sh
+   /data/data/app.source.getcontact/shared_prefs/GetContactSettingsPref.xml
+   ```
+2. Find `FINAL_KEY` and `TOKEN`
+
+   <img src="public/images/obtain_fk_and_token.png" alt="How to get GetContact Final Key & Token" height="150">
+3. Copy and paste both values into the configuration file: `src/configurations/getcontact.php`.
+
+   ```php
+   // just example
+   define("GTC_CREDENTIALS", json_encode([
+      [
+         "account" => "FILL_THIS_WITH_SHORT_DESCRIPTION_ABOUT_YOUR_GTC_ACCOUNT",
+         "finalKey" => "CHANGE_WITH_YOUR_FINAL_KEY",
+         "token" => "CHANGE_WITH_YOUR_TOKEN",
+      ],
+   ]));
+   ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## How to get GetContact Final Key & Token (Automatic)
+
+### Generate using web app
+You can use an external tool here: [https://tools.naufalist.com/getcontact/credentials/generate](https://tools.naufalist.com/getcontact/credentials/generate), or you can do this by yourself from `/dashboard/credentials/generate`.
+
+> :exclamation: Due to some limitations, the generate process from the web might sometimes fail because of rate limiting. Therefore, I recommend that you generate the credentials yourself using the feature already available on your local setup.
+
+### Generate using private getcontact app
+1. Download and install this app: [https://naufalist.com/private-getcontact-app/](https://naufalist.com/private-getcontact-app/).
+2. Go to the **Generate Credential** section.
+3. Fill out the form and follow the remaining steps.
+4. Done.
+
+<p align="center">
+  <img src="public/images/generate_creds_using_private_app.png"
+       alt="Generate credential using private app"
+       height="500">
+</p>
+
+<div id="getcontact-key-extractor"></div>
+
+### Extract directly from Getcontact app using LSPosed module
+Alternatively, you can try my **LSPosed module**. It automatically extracts the **Final Key** and **Token** from both older and the latest versions of Getcontact.
+
+> :information_source: **Requirements:** Your device must be **rooted with Magisk** and have **LSPosed** installed. If you don't know how to install LSPosed modules, there are plenty of tutorials on YouTube. I haven't had time to make a video tutorial yet lol 😄
+
+#### **Step:**
+1. Make sure your device is rooted with Magisk and has LSPosed installed.
+2. Download and install the **Getcontact Key Extractor** app:
+   https://naufalist.com/getcontact-key-extractor-app/
+3. Open **LSPosed**.
+   - Make sure the **Getcontact Key Extractor** module is **enabled**.
+   - Make sure the **Getcontact** app is selected (checked) in the module's app list.
+4. Open the **Getcontact Key Extractor** app.
+   - Grant **root access** when prompted.
+   - Just leave the app running in the background. There's no need to close it, but it's also fine if you do.
+5. Open the **Getcontact** app.
+   - If you are **not signed in**, wait until the **Sign In** screen appears.
+   - If you are **already signed in**, wait until the **main screen** has fully loaded.
+6. Return to the **Getcontact Key Extractor** app.
+   - The **Final Key** and **Token** should appear automatically.
+   - Copy the values.
+7. Done.
+
+#### **Troubleshooting:** If the credentials do not appear in the **Getcontact Key Extractor** app:
+
+1. Force close the **Getcontact** app.
+2. Open **LSPosed** and disable the module, then enable it again.
+3. Make sure the **Getcontact** app is checked in the module's app list.
+4. Repeat **Steps 4 and 5** above.
+
+#### **Proof that it works:**
+
+This guide was tested using **LDPlayer v9.2.6.1**, **Magisk v26.4-kitsune**, and **LSPosed v1.9.2-7024-zygisk**.
+
+
+<p align="center">
+  <img src="public/images/gtckeyextractor.png" alt="Getcontact Key Extractor" height="auto">
+</p>
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+
+## Installation
+
+1. Clone the repository. If you’re using XAMPP/Laragon/MAMP, place it in the htdocs directory.
+
+   ```sh
+   git clone https://github.com/naufalist/getcontact-web.git
+   ```
+2. In **src/configurations/getcontact.php**, you should update the credentials.
+
+   > The number of credentials you can choose in the form depends on how many credential entries you’ve added.
+   >
+
+   ```php
+   // just example
+   define("GTC_CREDENTIALS", json_encode([
+      [
+         "account" => "Account #1",
+         "finalKey" => "abc",
+         "token" => "def",
+      ],
+      [
+         "account" => "Account #2",
+         "finalKey" => "ghi",
+         "token" => "jkl",
+      ],
+   ]));
+   ```
+3. Start the web server
+4. Now, this app can be accessed in `http://localhost/getcontact-web`.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- USAGE EXAMPLES -->
+
+## Usage (Search feature)
+
+1. Access this site: `http://localhost/getcontact-web`.
+2. Enter the phone number into the form, for example: `081234567890`.
+3. Select the final key and token you want to use.
+4. Select the type of search: whether you want to look up a profile or search for tags.
+5. Click the submit button.
+6. If success, information from GetContact will be displayed above the form.
+7. Or, if it fails, the error message will appear in an alert and also above the form.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- CONTRIBUTING -->
+
+## Contributing
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- LICENSE -->
+
+## License
+
+This repo is under [MIT License](https://opensource.org/licenses/mit-license.php)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- CONTACT -->
+
+## Contact
+
+[@naufalist](https://twitter.com/naufalist) - contact.naufalist@gmail.com
+
+<p align="right">(<a href="#top">back to top</a>)</p>
